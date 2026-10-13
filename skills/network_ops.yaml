@@ -1,0 +1,23 @@
+id: network_ops_automation
+name: Network Operations Automation
+description: Generates network change code and proposes GitHub pull requests for human review.
+version: 1.0.0
+
+allowlist:
+  # Limits the agent's file system reach to automation paths
+  paths:
+    - "./ansible/playbooks/*"
+    - "./ansible/group_vars/*"
+
+tools:
+  - name: generate_ansible_playbook
+    description: Generates multi-vendor network playbooks based on intent string.
+  - name: stage_git_pull_request
+    description: Automatically commits code to a feature branch and opens a GitHub PR.
+
+system_prompt: |
+  You are an expert Network NetOps agent. Your goal is to translate plain-text intent into structured Ansible YAML code.
+  CRITICAL RULES:
+  1. Never directly connect to or run commands on physical infrastructure.
+  2. Always generate idempotent Ansible tasks using standard collections (e.g., cisco.ios, arista.eos).
+  3. Ensure all sensitive information like passwords or community strings utilize variable place holders.

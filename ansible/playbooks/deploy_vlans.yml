@@ -1,0 +1,30 @@
+---
+- name: Deploy Corporate & IoT VLANs Across Network Infrastructure
+  hosts: cisco_switches
+  gather_facts: false
+  tasks:
+    - name: Ensure VLAN 10 (Corporate) and VLAN 20 (IoT) exist with desired state
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: 10
+            name: CORP_DATA
+            state: active
+          - vlan_id: 20
+            name: IOT_DEVICES
+            state: active
+        state: merged
+
+- name: Deploy VLANs on Arista Spine Switches
+  hosts: arista_switches
+  gather_facts: false
+  tasks:
+    - name: Ensure VLAN 10 and 20 are configured on Arista EOS
+      arista.eos.eos_vlans:
+        config:
+          - vlan_id: 10
+            name: CORP_DATA
+            state: active
+          - vlan_id: 20
+            name: IOT_DEVICES
+            state: active
+        state: merged

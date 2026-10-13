@@ -1,0 +1,54 @@
+name: Network GitOps Pipeline (HITL)
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'ansible/**'
+  push:
+    branches: [ main ]
+
+jobs:
+  validate_and_check:
+    name: Lint and Dry-Run (Check Mode)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python & Ansible
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          pip install ansible-core ansible-lint
+          ansible-galaxy collection install cisco.ios
+
+      - name: Run Ansible Lint
+        run: ansible-lint ansible/playbooks/
+
+      - name: Execute Check Mode (Dry Run)
+        env:
+          ANSIBLE_NET_PASSWORD: ${{ secrets.NET_SSH_PASSWORD }}
+        run: |
+          # Simulates changes against hardware without committing them
+          ansible-playbook ansible/playbooks/deploy_vlans.yml --check -i ansible/inventory.ini
+
+  deploy_to_production:
+    name: Live Production Deployment
+    runs-on: self-hosted # Requires a local runner with internal network access to switches
+    if: github.event_name == 'push' # Only fires once the Pull Request is approved and merged
+    
+    steps:
+      - name: Checkout Approved Code
+        uses: actions/checkout@v4
+
+      - name: Execute Live Deployment
+        env:
+          ANSIBLE_NET_PASSWORD: ${{ secrets.NET_SSH_PASSWORD }}
+        run: |
+          ansible-playbook ansible/playbooks/deploy_vlans.yml -i ansible/inventory.ini

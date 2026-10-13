@@ -1,0 +1,18 @@
+---
+# Global Network Automation Settings
+ansible_connection: ansible.netcommon.network_cli
+ansible_user: "{{ lookup('env', 'ANSIBLE_NET_USER') | default('netops_svc', true) }}"
+ansible_password: "{{ lookup('env', 'ANSIBLE_NET_PASSWORD') }}"
+
+# Vendor standard timeouts
+ansible_command_timeout: 30
+ansible_connect_timeout: 30
+
+# Baseline network parameters
+ntp_servers:
+  - 192.0.2.1
+  - 192.0.2.2
+
+dns_servers:
+  - 192.0.2.53
+  - 198.51.100.53
